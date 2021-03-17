@@ -1,0 +1,383 @@
+<script runat="server">
+
+    /*
+    This script compares the fields in the Data Extension "a" (aka form.source) and "b" (aka form.target).
+    It then finds out which fields in "a" are missing in "b" and inserts them into "b".
+    */
+
+    Platform.Load("core", "1");
+
+    var api = new Script.Util.WSProxy();
+
+    api.resetClientIds();
+
+    var localDate = DateTime.SystemDateToLocalDate(Now());
+    var id = Platform.Function.GUID();
+
+    var form = {
+        source: 'Clients',
+        target: 'Clients_v2',
+        bu: {
+            source: '100010777',
+            target: '100013340'
+        }
+    }
+
+    var regex = {
+        guid: /^[0-9a-zA-Z]{8}\-[0-9a-zA-Z]{4}\-[0-9a-zA-Z]{4}\-[0-9a-zA-Z]{4}\-[0-9a-zA-Z]{12}$/g
+    }
+
+    try {
+
+        var res = addDeltaFields(form);
+
+        Write(Stringify(res));
+
+    } catch (err) {
+
+        var error = {
+            Status: 500,
+            Message: err
+        }
+
+        Write(Stringify(error));
+
+    }
+
+    function addDeltaFields(form) {
+
+        /*
+        Copies all the properties of a data extension and creates a new data extension with the same properties on a different business unit, keeping if possible the same folder structure
+        */
+
+        var delta = {};
+
+        api.setClientId({ 'ID': form.bu.source });
+
+        /* Check on the existing data extension */
+
+        var cols = ["Name", "CustomerKey"];
+
+        var filter = {
+            Property: (form.target.match(regex.guid).length > 0) ? "CustomerKey" : "Name",
+            SimpleOperator: "equals",
+            Value: form.source
+        }
+
+        var result = api.retrieve("DataExtension", cols, filter);
+
+        if(result.Results.length == 0) {
+
+            return {
+                Status: 404,
+                Message: "No data extension with the name " + createBadge(form.source) + " was found in " + createBadge(retrieveMIDName(form.bu.source)) + "."
+            }
+
+        }
+
+        var config = formatDataExtensionData(result, cols);
+
+        var cols = [
+            "Name",
+            "IsPrimaryKey",
+            "MaxLength",
+            "IsRequired",
+            "FieldType",
+            "DefaultValue",
+            "Scale"
+        ];
+
+        var result = api.retrieve("DataExtensionField", cols, {
+            Property: "DataExtension.CustomerKey",
+            SimpleOperator: "equals",
+            Value: config.CustomerKey
+        });
+
+        var fields_retrieve = Platform.Function.ParseJSON(Stringify(result));
+
+        var fields = formatFieldsData(result, cols);
+
+        config.Fields = fields;
+
+        delta[form.source] = Platform.Function.ParseJSON(Stringify(fields)).length;
+
+        /* Retrieve the target data extension */
+
+        if(form.bu.source != form.bu.target) {
+
+            api.resetClientIds();
+            api.setClientId({ 'ID': form.bu.target });
+
+        }
+
+        var cols = ["Name", "CustomerKey"];
+
+        var filter = {
+            Property: (form.target.match(regex.guid).length > 0) ? "CustomerKey" : "Name",
+            SimpleOperator: "equals",
+            Value: form.target
+        }
+
+        var result = api.retrieve("DataExtension", cols, filter);
+
+        var new_config = formatDataExtensionData(result, cols);
+
+        var cols = [
+            "Name",
+            "IsPrimaryKey",
+            "MaxLength",
+            "IsRequired",
+            "FieldType",
+            "DefaultValue",
+            "Scale"
+        ];
+
+        var result = api.retrieve("DataExtensionField", cols, {
+            Property: "DataExtension.CustomerKey",
+            SimpleOperator: "equals",
+            Value: new_config.CustomerKey
+        });
+
+        var new_fields_retrieve = Platform.Function.ParseJSON(Stringify(result));
+
+        var new_fields = formatFieldsData(result, cols);
+
+        delta[form.target] = Platform.Function.ParseJSON(Stringify(new_fields)).length;
+
+        var i = fields.length;
+
+        while(i--) {
+
+            var name = fields[i].Name;
+
+            fields[i].CustomerKey = Platform.Function.GUID();
+
+            for(var k in new_fields) {
+
+                if(new_fields[k].Name == fields[i].Name) fields.splice(i, 1);
+
+            }
+
+        }
+
+        delta["Delta"] = fields.length;
+
+        new_config.Fields = fields;
+
+        if(fields.length > 0) {
+
+            var res = api.updateItem("DataExtension", new_config);
+
+            var result = res.Results[0];
+
+            return {
+                Status: (res.Status != "OK") ? 500 : 200,
+                Config: config,
+                Response: res,
+                Delta: delta,
+                Message: result.StatusMessage
+            }
+
+        } else {
+
+            return {
+                Status: 401,
+                Delta: delta,
+                Message: "There are no fields found in \"" + form.source + "\" that don't exist in \"" + form.target + "\""
+            }
+
+        }
+
+    }
+
+    function formatDataExtensionData(result, cols) {
+
+        /*
+        Cleans the retrieved data by filtering on the provided column names
+        */
+
+        var fields = result.Results;
+
+        var o = {};
+
+        for(var f in fields) {
+
+            var field = fields[f];
+
+            for (var i = 0; i < cols.length; i++) {
+
+                var col = cols[i].split(".");
+
+                if(col.length > 1) {
+
+                    /* Exception for fields with a sub-object */
+                    
+                    var nm = col[0];
+                    var k = col[1];
+
+                    o[nm] = {}
+
+                    o[nm][k] = field[nm][k];
+
+                } else {
+
+                    var nm = col[0];
+
+                    o[nm] = field[nm];
+
+                }
+
+            }
+
+        }
+
+        return o;
+
+    }
+
+    function formatFieldsData(result, cols) {
+
+        /*
+        Cleans the retrieved data by filtering on the provided column names
+        */
+
+        var output = [];
+
+        var fields = result.Results;
+
+        for(var f in fields) {
+
+            var field = fields[f];
+
+            var o = {};
+
+            for(var i = 0; i < cols.length; i++) {
+
+                var nm = cols[i];
+
+                /* Ignore fields with empty values or values equal to 0, except for Ordinal field */
+
+                if(field[nm] != "" && field[nm] != null && (field[nm] > 0 || nm == "Ordinal")) {
+
+                    o[nm] = field[nm];
+
+                }
+
+            }
+
+            output.push(o);
+
+        }
+
+        /* Sort fields according to Ordinal value or Name */
+
+        if(output.length > 0) {
+
+            if(output[0].Ordinal != null) {
+                output.sort(function (a, b) { return (a.Ordinal > b.Ordinal) ? 1 : -1 });
+            } else {
+                output.sort(function (a, b) { return (a.Name > b.Name) ? 1 : -1 });
+            }
+
+        }
+
+        /* Reformat the default date value */
+
+        for(var k in output) {
+
+            var o = output[k];
+
+            if(o["FieldType"] == "Date" && o["DefaultValue"] != null && o["DefaultValue"].length > 0 && o["DefaultValue"] != "GetDate()" && o["DefaultValue"] != "GETDATE()") {
+
+                o["DefaultValue"] = formatDate(o["DefaultValue"]);
+
+            }
+
+        }
+
+        return output;
+
+    }
+
+    function retrieveMIDName(mid) {
+
+        /*
+        Retrieves a business unit name from id
+        */
+
+        var cols = ["Name"];
+
+        var filter = {
+            Property: "ID",
+            SimpleOperator: "equals",
+            Value: mid
+        };
+
+        var ret = api.retrieve("BusinessUnit", cols, filter);
+
+        return ret.Results[0].Name;
+
+    }
+
+    /* HELPER FUNCTIONS */
+
+    function wsPack(obj) {
+
+        var out = [];
+
+        for (k in obj) {
+
+            out.push({
+                Name: k,
+                Value: obj[k]
+            });
+
+        }
+
+        return out;
+
+    }
+
+    function wsUnpack(props) {
+
+        var out = {};
+
+        for(var k in props) {
+
+            var item = props[k];
+
+            out[item.Name] = item.Value;
+
+        }
+
+        return out;
+
+    }
+
+    function startsWith(str, word) {
+        return word.substring(0, str.length) === str
+    }
+
+    function inArray(arr, k) {
+        var out = false;
+        for (var i in arr) {
+            if (arr[i] == k) out = true;
+        }
+        return out;
+    }
+
+    function formatDate(dt) {
+
+        Variable.SetValue("DateString", dt);
+
+        var scr = "";
+            scr += "\%\%[";
+            scr += "SET @DateISO = FormatDate(@DateString, 'iso')";
+            scr += "Output(Concat(@DateISO))";
+            scr += "]\%\%";
+
+        return Platform.Function.TreatAsContent(scr);
+
+    }
+
+</script>
