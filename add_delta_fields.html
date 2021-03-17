@@ -58,8 +58,10 @@
 
         var cols = ["Name", "CustomerKey"];
 
+        var prop = (form.source.match(regex.guid).length > 0) ? "CustomerKey" : "Name";
+
         var filter = {
-            Property: (form.target.match(regex.guid).length > 0) ? "CustomerKey" : "Name",
+            Property: prop,
             SimpleOperator: "equals",
             Value: form.source
         }
@@ -70,7 +72,7 @@
 
             return {
                 Status: 404,
-                Message: "No data extension with the name " + createBadge(form.source) + " was found in " + createBadge(retrieveMIDName(form.bu.source)) + "."
+                Message: "No data extension with the " + prop + " " + form.source + " was found in " + retrieveMIDName(form.bu.source) + "."
             }
 
         }
@@ -112,13 +114,24 @@
 
         var cols = ["Name", "CustomerKey"];
 
+        var prop = (form.target.match(regex.guid).length > 0) ? "CustomerKey" : "Name";
+
         var filter = {
-            Property: (form.target.match(regex.guid).length > 0) ? "CustomerKey" : "Name",
+            Property: prop,
             SimpleOperator: "equals",
             Value: form.target
         }
 
         var result = api.retrieve("DataExtension", cols, filter);
+
+        if(result.Results.length == 0) {
+
+            return {
+                Status: 404,
+                Message: "No data extension with the " + prop + " " + form.target + " was found in " + retrieveMIDName(form.bu.target) + "."
+            }
+
+        }
 
         var new_config = formatDataExtensionData(result, cols);
 
