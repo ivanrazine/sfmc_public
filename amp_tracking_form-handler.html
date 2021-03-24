@@ -1,3 +1,7 @@
+//////////////////////
+//// FORM HANDLER
+//////////////////////
+
 Write( '{"items":[]}' );
 
 var trackingDE = 'AMP Email Open Tracking Log'; 
@@ -16,3 +20,15 @@ var vals = [sk, email, emailid, jobId, listId, batchId, eventDate];
 
 Platform.Function.InsertData(trackingDE, cols, vals);
   
+//////////////////////
+//// AMP EMAIL
+//////////////////////
+
+<amp-list
+    src="%%=CloudPagesURL(1234)=%%"
+    binding="refresh"
+    width="1"
+    height="1"
+    layout="fixed"
+>
+</amp-list>  
