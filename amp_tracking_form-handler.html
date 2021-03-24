@@ -1,0 +1,18 @@
+Write( '{"items":[]}' );
+
+var trackingDE = 'AMP Email Open Tracking Log'; 
+
+var sk = Attribute.GetValue('_subscriberkey'); 
+var email = Attribute.GetValue('emailaddr');
+var emailid = Attribute. GetValue('_emailid'); 
+var jobId = Attribute.GetValue('jobid'); 
+var listId = Attribute. GetValue('listid');
+var batchId = Attribute.GetValue('_JobSubscriberBatchID'); 
+var sysDate = Platform.Function.Now(); 
+var eventDate = Platform.Function.SystemDateToLocalDate(sysDate);
+
+var cols = ['Subscriberkey', 'EmailAddress', 'EmailId', 'JobId', 'ListId', 'BatchId', 'EventDate'];
+var vals = [sk, email, emailid, jobId, listId, batchId, eventDate];
+
+Platform.Function.InsertData(trackingDE, cols, vals);
+  
