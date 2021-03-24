@@ -1,0 +1,166 @@
+<script runat='server'>
+
+    Platform.Load('core', '1');
+
+    var api = new Script.Util.WSProxy();
+
+    var allowedOrigin = [
+        "https://playground.amp.dev",
+        "https://amp.gmail.dev",
+        "https://mail.google.com",
+        "https://user-content.s10.sfmc-content.com",
+        "https://news-acc.engie.be"
+    ];
+
+    var sender = Platform.Request.GetRequestHeader("AMP-Email-Sender");
+    var origin = Platform.Request.GetRequestHeader("Origin");
+    var source = Platform.Request.GetQueryStringParameter("__amp_source_origin");
+
+    try {
+
+        if(!!inArray(allowedOrigin, origin)) {
+
+            HTTPHeader.SetValue("Access-Control-Allow-Methods", "POST");
+            HTTPHeader.SetValue("Access-Control-Allow-Origin", origin);
+            HTTPHeader.SetValue("Content-Type", "application/json");
+            HTTPHeader.SetValue("Access-Control-Expose-Headers", "AMP-Access-Control-Allow-Source-Origin");
+            HTTPHeader.SetValue("AMP-Access-Control-Allow-Source-Origin", source);
+            HTTPHeader.SetValue("Access-Control-Allow-Credentials", "true");
+
+        } else {
+
+            throw "Origin not allowed";
+
+        }
+
+        if(Platform.Request.Method == "POST") {
+
+            var form = parsePostJSON();
+
+            form = processData(form);
+
+            var request = api.createItem('DataExtensionObject', {
+                Name: "AMP_DEMO",
+                Properties: wsPack(form)
+            });
+
+            if(request.Status == "OK") {
+
+                var result = {
+                    status: request.Status,
+                    message: request.Results[0].StatusMessage,
+                    details: request
+                }
+
+                Write(Stringify(result));
+
+            } else {
+
+                throw request.Results[0].StatusMessage;
+
+            }
+
+        } else {
+
+            var request = api.retrieve("DataExtensionObject[AMP_DEMO]", ["Id"], {
+                Property: "EmailAddress",
+                SimpleOperator: "isNotNull",
+                Value: " "
+            });
+
+            if(request.Status == "OK") {
+
+                var result = {
+                    items: [
+                        {
+                            num: request.Results.length
+                        }
+                    ]
+                } 
+
+                Write(Stringify(result));
+
+            } else {
+                throw "There was a problem retrieving from the Data Extension.";
+            }
+
+        }
+
+    } catch(err) {
+
+        Write(Stringify({
+            status: "Error",
+            message: err
+        }));
+
+    }
+
+    function processData(data) {
+
+        data.Id = Platform.Function.GUID();
+        data.CreatedDate = DateTime.SystemDateToLocalDate(Now());
+
+        return data;
+
+    }
+
+    function parsePostJSON() {
+
+        var o = {};
+
+        var post = String(Platform.Request.GetPostData());
+
+        var pairs = post.split("&");
+
+        for(var i in pairs) {
+
+            var pair = pairs[i];
+
+            if(String(pair).indexOf("=") != -1) {
+
+                var key = pair.split("=")[0];
+                var val = pair.split("=")[1];
+
+                o[key] = val;
+
+            }
+
+        }
+
+        return o;
+
+    }
+
+    function wsPack(o) {
+
+        var arr = [];
+
+        for (var k in o) {
+
+            arr.push({
+                Name: k,
+                Value: o[k]
+            });
+
+        }
+
+        return arr;
+
+    }
+
+    function inArray(arr, k) {
+
+        var b = false;
+
+        for (var i in arr) {
+
+            if (arr[i] == k) b = true;
+
+        }
+
+        return b;
+
+    }
+
+
+</script>
