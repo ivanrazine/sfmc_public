@@ -9,6 +9,8 @@
     <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
     <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
     <script async custom-element="amp-bind" src="https://cdn.ampproject.org/v0/amp-bind-0.1.js"></script>
+    <script async custom-element="amp-list" src="https://cdn.ampproject.org/v0/amp-list-0.1.js"></script>
+    <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
 
     <style amp4email-boilerplate>body{visibility:hidden}</style>
     <style amp-custom>
@@ -157,6 +159,7 @@
 
         form .form-group {
             position: relative;
+            background: #f9f9f9;
         }
 
         form .form-group .control-label {
@@ -177,17 +180,16 @@
         form .form-group input {
             display: block;
             background: none;
-            padding: 2px;
             font-family: monospace;
             font-size: 16px;
             border-width: 0;
             border-color: transparent;
             line-height: 1.9;
             width: 100%;
-            color: transparent;
             box-shadow: none;
             height: 1.9rem;
             color: #333;
+            padding: 4px 10px;
         }
 
         form .form-group input:focus {
@@ -302,14 +304,22 @@
                                                 <tr>
                                                     <td class="td-padding" align="left"
                                                         style="font-family: monospace; color: #212121; font-size: 24px; line-height: 30px; padding-top: 18px; padding-left: 18px; padding-right: 18px; padding-bottom: 0px;">
-                                                        Please fill out this form
+                                                        Subscribe to our Newsletter
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td class="td-padding" align="left"
-                                                        style="font-family: monospace; color: #212121; font-size: 16px; line-height: 24px; padding-top: 18px; padding-left: 18px; padding-right: 18px; padding-bottom: 0px; ">
-                                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                                                        incididunt ut labore et dolore magna aliqua.
+                                                        style="font-family: monospace; color: #212121; font-size: 16px; line-height: 24px; padding-top: 2px; padding-left: 18px; padding-right: 18px; padding-bottom: 0px; ">
+                                                        <amp-list 
+                                                            id="paragraph"
+                                                            src="https://jsonplaceholder.typicode.com/posts" 
+                                                        >
+                                                            <div placeholder>Loading...</div>
+                                                            <div fallback>Do it fast, we already have some subscribers!</div>
+                                                            <template type="amp-mustache">
+                                                                Do it fast, we already have {{ num }} subscribers!
+                                                            </template>
+                                                        </amp-list> 
                                                     </td>
                                                 </tr>
                                                 <!-- END BODY COPY -->
@@ -321,10 +331,10 @@
                                                             id="customForm"
                                                             class="custom-form" 
                                                             method="post" 
-                                                            action-xhr="..."
+                                                            action-xhr="https://jsonplaceholder.typicode.com/posts"
                                                             custom-validation-reporting="show-all-on-submit"
                                                             on="submit-success: AMP.setState({'status': event.response.status, 'submitting': false}), 
-                                                            subs.refresh; submit: AMP.setState({'submitting': true}); submit-error: AMP.setState({'status': event.response.status, 'submitting': false})"
+                                                            paragraph.refresh; submit: AMP.setState({'submitting': true}); submit-error: AMP.setState({'status': event.response.status, 'submitting': false})"
                                                         >
                                                             <div>
 
