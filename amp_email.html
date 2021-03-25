@@ -1,0 +1,443 @@
+<!-- {{={< >}=}} -->
+<!DOCTYPE html>
+<html amp4email data-css-strict>
+
+<head>
+
+    <meta charset="utf-8">
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+    <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+    <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+    <script async custom-element="amp-bind" src="https://cdn.ampproject.org/v0/amp-bind-0.1.js"></script>
+
+    <style amp4email-boilerplate>body{visibility:hidden}</style>
+    <style amp-custom>
+
+        /* BASIC STYLES */
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+        }
+
+        body,
+        #body_style {
+            background: #fffffe;
+        }
+
+        table td {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        table tr {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        table tbody {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        span.yshortcuts,
+        a span.yshortcuts {
+            color: #000001;
+            background-color: none;
+            border: none;
+        }
+
+        span.yshortcuts:hover,
+        span.yshortcuts:active,
+        span.yshortcuts:focus {
+            color: #000001;
+            background-color: none;
+            border: none;
+        }
+
+        @media only screen and (min-width: 600px) {
+
+            .td-padding {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            .padding-container {
+                padding: 0px 15px 0px 15px;
+            }
+
+        }
+
+        @media only screen and (max-width: 599px) {
+
+            *[class].wrapper {
+                width: 100%;
+            }
+
+            *[class].container {
+                width: 100%;
+            }
+
+            *[class].image {
+                width: 100%;
+                height: auto;
+            }
+
+            *[class].center {
+                margin: 0 auto;
+                text-align: center;
+            }
+
+            .padding-container {
+                padding: 0px 15px 0px 15px;
+            }
+
+            .hund {
+                width: 100%;
+                height: auto;
+            }
+
+            .td-padding {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            .stack {
+                width: 100%;
+            }
+
+            *[class="hide"] {
+                display: none
+            }
+
+        }
+
+        /* CUSTOM STYLES */
+
+        form.amp-form-submit-success > div {
+            display: none;
+        }
+
+        form [submit-error] {
+            font-size: 12px;
+            color:#b00020;
+        }
+
+        form [submit-success],
+        form .submit-success {
+            color: #337ab7;
+        }
+
+        form [submit-error],
+        form .submit-error {
+            color: #b00020;
+        }
+
+        form button {
+            outline:none;
+            font-size: 14px; 
+            line-height: 14px; 
+            font-weight: 500; 
+            font-family: Helvetica, Arial, sans-serif; 
+            color: #ffffff; 
+            text-decoration: none; 
+            border-radius: 3px; 
+            padding: 10px 25px; 
+            border: 1px solid #234688; 
+            display: inline-block; 
+            background-color: #234688; 
+            border-radius: 3px;
+        }
+
+        form .form-group {
+            position: relative;
+        }
+
+        form .form-group .control-label {
+            position: absolute;
+            top: 0.25rem;
+            z-index: 1;
+            color: #b3b3b3;
+            font-size: 16px;
+            font-weight: normal;
+        }
+
+        form .form-group .bar {
+            position: relative;
+            border-bottom: 1px solid #999;
+            display: block;
+        }
+
+        form .form-group input {
+            display: block;
+            background: none;
+            padding: 2px;
+            font-family: monospace;
+            font-size: 16px;
+            border-width: 0;
+            border-color: transparent;
+            line-height: 1.9;
+            width: 100%;
+            color: transparent;
+            box-shadow: none;
+            height: 1.9rem;
+            color: #333;
+        }
+
+        form .form-group input:focus {
+            outline: none;
+        }
+
+        form .form-group input:empty ~ .control-label {
+            display:none;
+        }
+
+        form .form-group input:hover ~ .bar,
+        form .form-group input:focus ~ .bar {
+            border-color: #337ab7;
+        }
+
+        form amp-selector [option] > span {
+            border-radius: 25px;
+            background: white;
+            display: inline-block;
+            vertical-align: text-bottom;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid #999999;
+        }
+
+        form amp-selector [option] > span i {
+            display: block;
+            width: 8px;
+            height: 8px;
+            border: 3px solid #FFFFFF;
+            background: #FFFFFF;
+            border-radius: 25px;
+        }
+
+        form amp-selector [option][selected] > span {
+            border: 2px solid #337ab7;
+        }
+
+        form amp-selector [option][selected] > span i {
+            border: 3px solid #FFFFFF;
+            background: #337ab7;
+        }
+
+        form amp-selector [option]:focus,
+        form amp-selector [option][selected] {
+            outline: none;
+        }
+
+    </style>
+
+</head>
+
+<body style="margin:0; padding:0; background-color: #eeeeee;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eeeeee">
+
+        <!-- VIEW ONLINE -->
+        <tr>
+            <td width="100%" valign="top" align="center" class="padding-container"
+                style="padding: 18px 0px 0px 0px;">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="wrapper" bgcolor="#eeeeee">
+                <tr>
+                    <td align="center" bgcolor="#eeeeee">
+                    <a href="https://ampscript.xyz/about/" target="_blank"
+                        style="font-size: 12px; line-height: 14px; font-weight: 500; font-family: monospace; color: #212121; text-decoration: underline;padding: 0px; border: 1px solid #eeeeee; display: inline-block;">View
+                        Online</a>
+                    </td>
+                </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- VIEW VIEW ONLINE -->
+
+        <!-- SPACER -->
+        <tr>
+            <td height="25px"></td>
+        </tr>
+        <!-- END SPACER -->
+
+        <!-- START CARD -->
+        <tr>
+            <td width="100%" valign="top" align="center" class="padding-container"
+                style="padding-top: 0px; padding-bottom: 18px;">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="wrapper">
+                    <tr>
+                        <td>
+                            <table cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="border-radius: 3px; border-bottom: 2px solid #d4d4d4;" class="card-1" width="100%"
+                                        valign="top" align="center">
+                                        <table style="border-radius: 3px;" width="600" cellpadding="0" cellspacing="0" border="0"
+                                        align="center" class="wrapper" bgcolor="#ffffff">
+                                        <tr>
+                                            <td align="center">
+                                            <table width="600" cellpadding="0" cellspacing="0" border="0" class="container">
+                                                <!-- START HEADER IMAGE -->
+                                                <tr>
+                                                <td align="center" class="hund ripplelink" width="600">
+                                                    <amp-img 
+                                                        src="images/material-header-2.jpg" 
+                                                        width="600" 
+                                                        height="238" 
+                                                        layout="responsive"
+                                                        alt="Header"
+                                                        style="border-radius: 3px 3px 0px 0px; width: 100%; max-width: 600px"
+                                                        class="hund"
+                                                    ></amp-img>
+                                                </td>
+                                                </tr>
+                                                <!-- END HEADER IMAGE -->
+                                                <!-- START BODY COPY -->
+                                                <tr>
+                                                    <td class="td-padding" align="left"
+                                                        style="font-family: monospace; color: #212121; font-size: 24px; line-height: 30px; padding-top: 18px; padding-left: 18px; padding-right: 18px; padding-bottom: 0px;">
+                                                        Please fill out this form
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="td-padding" align="left"
+                                                        style="font-family: monospace; color: #212121; font-size: 16px; line-height: 24px; padding-top: 18px; padding-left: 18px; padding-right: 18px; padding-bottom: 0px; ">
+                                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                                        incididunt ut labore et dolore magna aliqua.
+                                                    </td>
+                                                </tr>
+                                                <!-- END BODY COPY -->
+                                                <!-- FORM -->
+                                                <tr>
+                                                    <td class="td-padding" align="left" style="font-family: monospace; color: #212121; font-size: 16px; line-height: 24px; padding-top: 18px; padding-left: 18px; padding-right: 18px; padding-bottom: 18px; ">
+
+                                                        <form 
+                                                            id="customForm"
+                                                            class="custom-form" 
+                                                            method="post" 
+                                                            action-xhr="https://news-acc.engie.be/amp-for-email"
+                                                            custom-validation-reporting="show-all-on-submit"
+                                                            on="submit-success: AMP.setState({'status': event.response.status, 'submitting': false}), 
+                                                            subs.refresh; submit: AMP.setState({'submitting': true}); submit-error: AMP.setState({'status': event.response.status, 'submitting': false})"
+                                                        >
+                                                            <div>
+
+                                                                <div class="form-group">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        name="EmailAddress"
+                                                                        id="EmailAddress" 
+                                                                        required
+                                                                        pattern="^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,})$"
+                                                                        placeholder="E-mail"
+                                                                    >
+                                                                    <label for="EmailAddress" class="control-label">E-mail</label>
+                                                                    <i class="bar"></i>
+                                                                    <span class="input-error" visible-when-invalid="valueMissing" validation-for="EmailAddress">
+                                                                        Please fill out this field.
+                                                                    </span>
+                                                                    <span class="input-error" visible-when-invalid="patternMismatch" validation-for="EmailAddress">
+                                                                        Please enter a valid email address.
+                                                                    </span>
+                                                                </div>
+                                                                <br>
+                                                                <input 
+                                                                    tabIndex=-1 
+                                                                    aria-hidden=true 
+                                                                    type="text"
+                                                                    name="Consent"
+                                                                    id="Consent"
+                                                                    style="display:none;"
+                                                                    required
+                                                                    [value]="selectedItem"
+                                                                >
+                                                                </input>
+                                                                <amp-selector 
+                                                                    on="select:AMP.setState({selectedItem: event.targetOption})"
+                                                                    layout="container"
+                                                                >
+                                                                    <div option="OPTIN">
+                                                                        <span><i></i></span>&nbsp;I consent to the <a href="https://www.engie.be/fr/conditions-utilisation/" style="color:#00aaff;" target="_blank">Terms & Conditions</a>
+                                                                    </div>
+                                                                </amp-selector>
+                                                                <span 
+                                                                    class="input-error" 
+                                                                    visible-when-invalid="valueMissing" 
+                                                                    validation-for="Consent"
+                                                                >
+                                                                    Please accept our terms.
+                                                                </span>
+                                                                <br>
+                                                                <button 
+                                                                    [text]="(submitting == true) ? 'PLEASE WAIT...' : 'SUBSCRIBE ME NOW'"
+                                                                >
+                                                                    SUBSCRIBE ME NOW
+                                                                </button>
+                                                            </div>
+                                                            <div submit-success>
+                                                                <p 
+                                                                    [class]="(status != 'OK') ? 'submit-error' : 'submit-success' "
+                                                                    [text]="(status != 'OK') ? 'Errors occured. Please try again later' : 'Thank you! You have successfully subscribed.'">
+                                                                    Thank you! You have successfully subscribed.
+                                                                </p>
+                                                            </div>
+                                                            <div submit-error>
+                                                                <p>Subscription failed!</p>
+                                                            </div>
+                                                        </form> 
+
+                                                    </td>
+                                                </tr>
+                                                <!-- END FORM -->
+                                            </table>
+                                            </td>
+                                        </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- END CARD -->
+
+        <!-- FOOTER -->
+        <tr>
+            <td width="100%" valign="top" align="center" class="padding-container">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="wrapper">
+                    <tr>
+                        <td class="td-padding" align="center"
+                        style="font-family: monospace; color: #212121; font-size: 16px; line-height: 24px; padding-top: 0px; padding-left: 0px; padding-right: 0px; padding-bottom: 0px; ">
+                        &copy; 2021 Footer Text
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" bgcolor="#eeeeee">
+                        <a href="https://ampscript.xyz/about/" target="_blank"
+                            style="font-size: 12px; line-height: 14px; font-weight: 500; font-family: monospace; color: #212121; text-decoration: underline;padding: 0px; border: 1px solid #eeeeee; display: inline-block;">Unsubscribe</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- FOOTER -->
+
+        <!-- SPACER -->
+        <tr>
+            <td height="36px"></td>
+        </tr>
+        <!-- END SPACER -->
+
+    </table>
+
+</body>
+
+</html>
