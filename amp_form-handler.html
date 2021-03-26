@@ -1,165 +1,455 @@
-<script runat='server'>
+<!-- {{={< >}=}} -->
+<!DOCTYPE html>
+<html amp4email data-css-strict>
 
-    Platform.Load('core', '1');
+<head>
 
-    var api = new Script.Util.WSProxy();
+    <meta charset="utf-8">
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+    <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+    <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+    <script async custom-element="amp-bind" src="https://cdn.ampproject.org/v0/amp-bind-0.1.js"></script>
+    <script async custom-element="amp-list" src="https://cdn.ampproject.org/v0/amp-list-0.1.js"></script>
+    <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
 
-    var allowedOrigin = [
-        "https://playground.amp.dev",
-        "https://amp.gmail.dev",
-        "https://mail.google.com",
-        "https://user-content.s10.sfmc-content.com"
-    ];
+    <style amp4email-boilerplate>body{visibility:hidden}</style>
+    <style amp-custom>
 
-    var sender = Platform.Request.GetRequestHeader("AMP-Email-Sender");
-    var origin = Platform.Request.GetRequestHeader("Origin");
-    var source = Platform.Request.GetQueryStringParameter("__amp_source_origin");
+        /* BASIC STYLES */
 
-    try {
-
-        if(!!inArray(allowedOrigin, origin)) {
-
-            HTTPHeader.SetValue("Access-Control-Allow-Methods", "POST");
-            HTTPHeader.SetValue("Access-Control-Allow-Origin", origin);
-            HTTPHeader.SetValue("Content-Type", "application/json");
-            HTTPHeader.SetValue("Access-Control-Expose-Headers", "AMP-Access-Control-Allow-Source-Origin");
-            HTTPHeader.SetValue("AMP-Access-Control-Allow-Source-Origin", source);
-            HTTPHeader.SetValue("Access-Control-Allow-Credentials", "true");
-
-        } else {
-
-            throw "Origin not allowed";
-
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
         }
 
-        if(Platform.Request.Method == "POST") {
+        body,
+        #body_style {
+            background: #fffffe;
+        }
 
-            var form = parsePostJSON();
+        table td {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
 
-            form = processData(form);
+        table tr {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
 
-            var request = api.createItem('DataExtensionObject', {
-                Name: "AMP_DEMO",
-                Properties: wsPack(form)
-            });
+        table tbody {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
 
-            if(request.Status == "OK") {
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
 
-                var result = {
-                    status: request.Status,
-                    message: request.Results[0].StatusMessage,
-                    details: request
-                }
+        span.yshortcuts,
+        a span.yshortcuts {
+            color: #535353;
+            background-color: none;
+            border: none;
+        }
 
-                Write(Stringify(result));
+        span.yshortcuts:hover,
+        span.yshortcuts:active,
+        span.yshortcuts:focus {
+            color: #535353;
+            background-color: none;
+            border: none;
+        }
 
-            } else {
+        @media only screen and (min-width: 600px) {
 
-                throw request.Results[0].StatusMessage;
-
+            .td-padding {
+                padding-left: 15px;
+                padding-right: 15px;
             }
 
-        } else {
-
-            var request = api.retrieve("DataExtensionObject[AMP_DEMO]", ["Id"], {
-                Property: "EmailAddress",
-                SimpleOperator: "isNotNull",
-                Value: " "
-            });
-
-            if(request.Status == "OK") {
-
-                var result = {
-                    items: [
-                        {
-                            num: request.Results.length
-                        }
-                    ]
-                } 
-
-                Write(Stringify(result));
-
-            } else {
-                throw "There was a problem retrieving from the Data Extension.";
+            .padding-container {
+                padding: 0px 15px 0px 15px;
             }
 
         }
 
-    } catch(err) {
+        @media only screen and (max-width: 599px) {
 
-        Write(Stringify({
-            status: "Error",
-            message: err
-        }));
+            *[class].wrapper {
+                width: 100%;
+            }
 
-    }
+            *[class].container {
+                width: 100%;
+            }
 
-    function processData(data) {
+            *[class].image {
+                width: 100%;
+                height: auto;
+            }
 
-        data.Id = Platform.Function.GUID();
-        data.CreatedDate = DateTime.SystemDateToLocalDate(Now());
+            *[class].center {
+                margin: 0 auto;
+                text-align: center;
+            }
 
-        return data;
+            .padding-container {
+                padding: 0px 15px 0px 15px;
+            }
 
-    }
+            .hund {
+                width: 100%;
+                height: auto;
+            }
 
-    function parsePostJSON() {
+            .td-padding {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
 
-        var o = {};
+            .stack {
+                width: 100%;
+            }
 
-        var post = String(Platform.Request.GetPostData());
-
-        var pairs = post.split("&");
-
-        for(var i in pairs) {
-
-            var pair = pairs[i];
-
-            if(String(pair).indexOf("=") != -1) {
-
-                var key = pair.split("=")[0];
-                var val = pair.split("=")[1];
-
-                o[key] = val;
-
+            *[class="hide"] {
+                display: none
             }
 
         }
 
-        return o;
+        /* CUSTOM STYLES */
 
-    }
-
-    function wsPack(o) {
-
-        var arr = [];
-
-        for (var k in o) {
-
-            arr.push({
-                Name: k,
-                Value: o[k]
-            });
-
+        form.amp-form-submit-success > div {
+            display: none;
         }
 
-        return arr;
-
-    }
-
-    function inArray(arr, k) {
-
-        var b = false;
-
-        for (var i in arr) {
-
-            if (arr[i] == k) b = true;
-
+        form [submit-success],
+        form [submit-error],
+        form .submit-success,
+        form .submit-error {
+            color: white;
+            border-radius: 3px;
+            margin: 0;
+            padding: 10px 20px;
         }
 
-        return b;
+        form [submit-success],
+        form .submit-success {
+            background: green;
+        }
 
-    }
+        form [submit-error],
+        form .submit-error {
+            background: red;
+        }
 
+        form button {
+            outline:none;
+            font-size: 16px; 
+            line-height: 20px; 
+            font-weight: bold; 
+            font-family: sans-serif;
+            color: #ffffff;
+            background-color: #242424;
+            border-color: #242424;
+            border-style: none;
+            border-width: 1px;
+            border-radius: 3px;
+            padding-left: 25px;
+            padding-right: 25px;
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
 
-</script>
+        form .form-group {
+            position: relative;
+        }
+
+        form .form-group label {
+            display: block;
+            font-size: 18px;
+            font-weight: normal;
+            padding-bottom: 6px;
+            color: #535353;
+        }
+
+        form .form-group input {
+            display: block;
+            background: none;
+            font-family: sans-serif;
+            font-size: 18px;
+            width: 100%;
+            box-shadow: none;
+            color: #535353;
+            border-style: solid;
+            border-color: #dfdfdf;
+            border-width: 2px;
+            border-radius: 6px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        form .form-group input.user-invalid {
+            border-color: red;
+        }
+
+        form .form-group input.user-valid {
+            border-color: green;
+        }
+
+        form .form-group input:hover,
+        form .form-group input:focus {
+            outline: none;
+            border-color: #242424;
+        }
+
+        form amp-selector [option] > span {
+            border-radius: 25px;
+            background: white;
+            display: inline-block;
+            vertical-align: text-bottom;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid #dfdfdf;
+        }
+
+        form amp-selector [option] > span i {
+            display: block;
+            width: 8px;
+            height: 8px;
+            border: 3px solid #FFFFFF;
+            background: #FFFFFF;
+            border-radius: 25px;
+        }
+
+        form amp-selector [option][selected] > span {
+            border: 2px solid #242424;
+        }
+
+        form amp-selector [option][selected] > span i {
+            border: 3px solid #FFFFFF;
+            background: #242424;
+        }
+
+        form amp-selector [option]:focus,
+        form amp-selector [option][selected] {
+            outline: none;
+        }
+
+    </style>
+
+</head>
+
+<body style="margin:0; padding:0; background-color: #eeeeee;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eeeeee">
+
+        <!-- VIEW ONLINE -->
+        <tr>
+            <td width="100%" valign="top" align="center" class="padding-container"
+                style="padding: 18px 0px 0px 0px;">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="wrapper" bgcolor="#eeeeee">
+                <tr>
+                    <td align="center" bgcolor="#eeeeee">
+                    <a href="%%view_email_url%%" target="_blank"
+                        style="font-size: 14px; line-height: 20px; font-weight: 500; font-family: serif; color: #212121; text-decoration: underline;padding: 0px; border: 1px solid #eeeeee; display: inline-block;">View Online</a>
+                    </td>
+                </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- VIEW VIEW ONLINE -->
+
+        <!-- SPACER -->
+        <tr>
+            <td height="15px"></td>
+        </tr>
+        <!-- END SPACER -->
+
+        <!-- START CARD -->
+        <tr>
+            <td width="100%" valign="top" align="center" class="padding-container"
+                style="padding-top: 0px; padding-bottom: 30px;">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="wrapper">
+                    <tr>
+                        <td align="center">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="border-radius: 6px;" class="card-1" width="100%"
+                                        valign="top" align="center">
+                                        <table style="border-radius: 6px; border-bottom: 2px solid #d4d4d4;" width="600" cellpadding="0" cellspacing="0" border="0"
+                                        align="center" class="wrapper" bgcolor="#ffffff">
+                                        <tr>
+                                            <td align="center">
+                                                <table width="600" cellpadding="0" cellspacing="0" border="0" class="container">
+                                                    <!-- START HEADER IMAGE -->
+                                                    <tr>
+                                                    <td align="center" class="hund ripplelink" width="600">
+                                                        <amp-img 
+                                                            src="https://ampscript.xyz/wp-content/uploads/2021/03/amp-banner.png" 
+                                                            width="600" 
+                                                            height="238" 
+                                                            layout="responsive"
+                                                            alt="Header"
+                                                            style="border-radius: 6px 6px 0px 0px; width: 100%; max-width: 600px"
+                                                            class="hund"
+                                                        ></amp-img>
+                                                    </td>
+                                                    </tr>
+                                                    <!-- END HEADER IMAGE -->
+                                                    <!-- START BODY COPY -->
+                                                    <tr>
+                                                        <td class="td-padding" align="left" style="font-family: sans-serif;color: #212121;font-size: 28px;font-weight: bold;line-height: 30px;padding-top: 30px;padding-left: 30px;padding-right: 30px;padding-bottom: 0px;">
+                                                            Subscribe to our Newsletter
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="td-padding" align="left"
+                                                            style="font-family: serif; color: #535353; font-size: 18px; line-height: 24px; padding-top: 2px; padding-left: 30px; padding-right: 30px; padding-bottom: 0px; ">
+                                                            <amp-list 
+                                                                id="paragraph"
+                                                                src="#" 
+                                                            >
+                                                                <div placeholder>Loading...</div>
+                                                                <div fallback>Do it fast, we already have some subscribers!</div>
+                                                                <template type="amp-mustache">
+                                                                    Do it fast, we already have {{ num }} subscribers!
+                                                                </template>
+                                                            </amp-list> 
+                                                        </td>
+                                                    </tr>
+                                                    <!-- END BODY COPY -->
+                                                    <!-- FORM -->
+                                                    <tr>
+                                                        <td class="td-padding" align="left" style="font-family: serif; color: #212121; font-size: 18px; line-height: 24px; padding-top: 20px; padding-left: 30px; padding-right: 30px; padding-bottom: 30px; ">
+
+                                                            <form 
+                                                                id="customForm"
+                                                                class="custom-form" 
+                                                                method="post" 
+                                                                action-xhr="#"
+                                                                custom-validation-reporting="show-all-on-submit"
+                                                                on="submit-success: AMP.setState({'status': event.response.status, 'submitting': false}), 
+                                                                paragraph.refresh; submit: AMP.setState({'submitting': true}); submit-error: AMP.setState({'status': event.response.status, 'submitting': false})"
+                                                            >
+                                                                <div>
+
+                                                                    <div class="form-group">
+                                                                        <label for="EmailAddress">E-mail&nbsp;*</label>
+                                                                        <input 
+                                                                            type="text" 
+                                                                            name="EmailAddress"
+                                                                            id="EmailAddress" 
+                                                                            required
+                                                                            pattern="^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,})$"
+                                                                        >
+                                                                        <span class="input-error" visible-when-invalid="valueMissing" validation-for="EmailAddress">
+                                                                            Please fill out this field.
+                                                                        </span>
+                                                                        <span class="input-error" visible-when-invalid="patternMismatch" validation-for="EmailAddress">
+                                                                            Please enter a valid email address.
+                                                                        </span>
+                                                                    </div>
+                                                                    <br>
+                                                                    <input 
+                                                                        tabIndex=-1 
+                                                                        aria-hidden=true 
+                                                                        type="text"
+                                                                        name="Consent"
+                                                                        id="Consent"
+                                                                        style="display:none;"
+                                                                        required
+                                                                        [value]="selectedItem"
+                                                                    >
+                                                                    </input>
+                                                                    <amp-selector 
+                                                                        on="select:AMP.setState({selectedItem: event.targetOption})"
+                                                                        layout="container"
+                                                                    >
+                                                                        <div option="OPTIN">
+                                                                            <span><i></i></span>&nbsp;I consent to the <a href="https://ampscript.xyz/privacy-policy/" style="color:#242424;font-weight:bold;" target="_blank">Terms & Conditions</a>&nbsp;*
+                                                                        </div>
+                                                                    </amp-selector>
+                                                                    <span 
+                                                                        class="input-error" 
+                                                                        visible-when-invalid="valueMissing" 
+                                                                        validation-for="Consent"
+                                                                    >
+                                                                        Please accept our terms.
+                                                                    </span>
+                                                                    <br>
+                                                                    <button 
+                                                                        [text]="(submitting == true) ? 'Please wait&hellip;' : 'Subscribe me now'"
+                                                                    >
+                                                                        Subscribe me now
+                                                                    </button>
+                                                                </div>
+                                                                <div submit-success>
+                                                                    <p 
+                                                                        [class]="(status != 'OK') ? 'submit-error' : 'submit-success' "
+                                                                        [text]="(status != 'OK') ? 'Errors occured. Please try again later' : 'Thank you! You are now subscribed.'">
+                                                                        Thank you! You are now subscribed.
+                                                                    </p>
+                                                                </div>
+                                                                <div submit-error>
+                                                                    <p>Subscription failed!</p>
+                                                                </div>
+                                                            </form> 
+
+                                                        </td>
+                                                    </tr>
+                                                    <!-- END FORM -->
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- END CARD -->
+
+        <!-- FOOTER -->
+        <tr>
+            <td width="100%" valign="top" align="center" class="padding-container">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="wrapper">
+                    <tr>
+                        <td class="td-padding" align="center"
+                        style="font-family: serif; color: #212121; font-size: 16px; line-height: 24px; padding-top: 0px; padding-left: 0px; padding-right: 0px; padding-bottom: 0px; ">
+                        ampscript.xyz | &copy; %%xtyear%% All rights reserved.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" bgcolor="#eeeeee">
+                        <a href="%%unsub_center_url%%" target="_blank"
+                            style="font-size: 14px; line-height: 20px; font-weight: 500; font-family: serif; color: #212121; text-decoration: underline;padding: 0px; border: 1px solid #eeeeee; display: inline-block;">Unsubscribe</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- FOOTER -->
+
+        <!-- SPACER -->
+        <tr>
+            <td height="36px"></td>
+        </tr>
+        <!-- END SPACER -->
+
+    </table>
+
+    <custom name="opencounter" type="tracking">
+
+</body>
+
+</html>
