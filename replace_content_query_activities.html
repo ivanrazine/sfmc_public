@@ -1,0 +1,103 @@
+<script runat='server'>
+
+    Platform.Load('core', '1');
+
+    var api = new Script.Util.WSProxy();
+
+    var config = {
+        list: [
+            "Demo Query 1", 
+            "Demo Query 2"
+        ],
+        replace: {
+            what: "Something",
+            by: "Other"
+        }
+    }
+
+    var results = {
+        retrieve: [],
+        compile: [],
+        process: [],
+        update: []
+    };
+
+    try {
+
+        /// Retrieve the data from the Queries
+
+        for(var i = 0; i < config.list.length; i++) {
+
+            var name = config.list[i];
+
+            var result = QueryDefinition.Retrieve({
+                Property: "Name",
+                SimpleOperator: "equals",
+                Value: name
+            });
+
+            if(result.length > 0) {
+
+                results.retrieve.push(result[0]);
+
+            }
+
+        }
+
+        /// Compile the data to build an update object
+
+        for(var k in results.retrieve) {
+
+            var o = results.retrieve[k];
+
+            results.compile.push({
+                ObjectID: o.ObjectID,
+                QueryText: o.QueryText,
+                DataExtensionTarget: {
+                    Name: o.DataExtensionTarget.Name
+                }
+            });
+
+            /// NOTE: ObjectID/CustomerKey and DataExtensionTarget are required in WSProxy update.
+
+        }
+
+        /// Process the data within the update object
+
+        for(var k in results.compile) {
+
+            var o = Platform.Function.ParseJSON(Stringify(results.compile[k]));
+
+            o.QueryText = o.QueryText.split(config.replace.what).join(config.replace.by);
+
+            results.process.push(o);
+
+        }
+
+        /// Update the Queries
+
+        var res = api.updateBatch("QueryDefinition", results.process);
+
+        var updates = res.Results;
+
+        for(var k in updates) {
+
+            var update = updates[k];
+
+            results.update.push({
+                Name: update.Object.Name,
+                Status: update.StatusCode,
+                Message: update.StatusMessage
+            });
+
+        }
+
+        Write(Stringify(results));
+
+    } catch(err) {
+
+        Write(Stringify(err));
+
+    }
+
+</script>
