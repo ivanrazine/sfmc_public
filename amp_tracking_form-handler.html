@@ -6,29 +6,101 @@
 
     Platform.Load('core', '1');
 
+    var api = new Script.Util.WSProxy();
+
+    // Please add your allowed origins here
+
+    var allowedOrigin = [
+        "https://playground.amp.dev",
+        "https://amp.gmail.dev",
+        "https://mail.google.com"
+    ];
+
+    var sender = Platform.Request.GetRequestHeader("AMP-Email-Sender");
+    var origin = Platform.Request.GetRequestHeader("Origin");
+    var source = Platform.Request.GetQueryStringParameter("__amp_source_origin");
+
+    if(origin == null || origin.length === 0) origin = referer;
+
+    // Origin doesn't work in FF, in IE11 Origin is the full URL (not only domain)
+
+    var regex = /^(?:\/\/|[^\/]+)*/g;
+    var match = origin.match(regex);
+    var origin = (match.length > 0) ? match[0] : null;
+
     try {
+
+        if(!!inArray(allowedOrigin, origin)) {
+
+            HTTPHeader.SetValue("Access-Control-Allow-Methods", "POST");
+            HTTPHeader.SetValue("Access-Control-Allow-Origin", origin);
+            HTTPHeader.SetValue("Content-Type", "application/json");
+            if(source != null) {
+                HTTPHeader.SetValue("Access-Control-Expose-Headers", "AMP-Redirect-To, AMP-Access-Control-Allow-Source-Origin");
+                HTTPHeader.SetValue("AMP-Access-Control-Allow-Source-Origin", source);
+            }
+            HTTPHeader.SetValue("Access-Control-Allow-Credentials", "true");
+
+        } else {
+
+            throw "Origin not allowed";
+
+        }
 
         Write( '{"items":[]}' );
 
-        var trackingDE = 'AMP Email Open Tracking Log'; 
+        var config = {
+            de: 'AMP Email Opens',
+            attrs: {
+                Subscriberkey: Attribute.GetValue('_subscriberkey'),
+                EmailAddress: Attribute.GetValue('emailaddr'),
+                EmailId: Attribute.GetValue('_emailid'), 
+                JobId: Attribute.GetValue('jobid'),
+                ListId: Attribute.GetValue('listid'),
+                BatchId: Attribute.GetValue('_JobSubscriberBatchID'), 
+                EventDate: Platform.Function.SystemDateToLocalDate(Platform.Function.Now())
+            }
+        }
 
-        var sk = Attribute.GetValue('_subscriberkey'); 
-        var email = Attribute.GetValue('emailaddr');
-        var emailid = Attribute.GetValue('_emailid'); 
-        var jobId = Attribute.GetValue('jobid'); 
-        var listId = Attribute.GetValue('listid');
-        var batchId = Attribute.GetValue('_JobSubscriberBatchID'); 
-        var sysDate = Platform.Function.Now(); 
-        var eventDate = Platform.Function.SystemDateToLocalDate(sysDate);
-
-        var cols = ['Subscriberkey', 'EmailAddress', 'EmailId', 'JobId', 'ListId', 'BatchId', 'EventDate'];
-        var vals = [sk, email, emailid, jobId, listId, batchId, eventDate];
-
-        Platform.Function.InsertData(trackingDE, cols, vals);
+        var result = api.createItem('DataExtensionObject', {
+            Name: config.de,
+            Properties: wsPack(config.attrs)
+        });
 
     } catch(err) {
 
         Write(Stringify(err));
+
+    }
+
+    function wsPack(o) {
+
+        var arr = [];
+
+        for (var k in o) {
+
+            arr.push({
+                Name: k,
+                Value: o[k]
+            });
+
+        }
+
+        return arr;
+
+    }
+
+    function inArray(arr, k) {
+
+        var b = false;
+
+        for (var i in arr) {
+
+            if (arr[i] == k) b = true;
+
+        }
+
+        return b;
 
     }
 
