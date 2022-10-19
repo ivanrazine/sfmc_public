@@ -1,0 +1,207 @@
+<script runat='server'>
+
+    Platform.Load('Core', '1');
+
+    var api = new Script.Util.WSProxy();
+
+    var form = {
+        entity: 'query',
+        bu: 'PUT BU HERE',
+        by: '',
+        search: ''
+    }
+
+    try {
+
+        var auth = requestToken(form.bu);
+
+        if (auth.accessToken != null) {
+
+            var query = {
+                pagesize: 300,
+                fields: [
+                    'name',
+                    'description'
+                ]
+            }
+
+            if(form.entity == 'query') {
+
+                query.fields = [
+                    'name',
+                    'description',
+                    'targetName',
+                    'targetUpdateTypeName',
+                    'categoryId',
+                    'queryText',
+                    'queryDefinitionId'
+                ];
+
+            } else {
+
+                query.fields = [
+                    'name',
+                    'description',
+                    'categoryId',
+                    'script',
+                    'ssjsActivityId',
+                    'status'
+                ];
+
+            }
+
+            query.fields = query.fields.join(',');
+
+            if(form.by == 'name') {
+
+                if(form.search.length > 0) {
+                    query.filter = "name%20like%20'" + form.search + "'";
+                } 
+
+            }
+            
+            var queryString = [];
+
+            for(var k in query) {
+
+                if(query[k] != null && query[k].toString().length > 0) {
+                    queryString.push("$" + k + "=" + query[k]);
+                }
+
+            }
+
+            queryString = queryString.join("&");
+
+            /////////////////////////////////////////////////////
+            ////// SEARCH
+            /////////////////////////////////////////////////////
+
+            var searchResults = [];
+            var hasMore = true;
+            var i = 1;
+
+            while(hasMore) {
+
+                var instance = (form.entity == 'query') ? 'queries' : 'scripts';
+
+                var requestUrl = auth.restInstanceUrl + "automation/v1/" + instance + "?" + queryString + "&$page=" + i;
+
+                var req = new Script.Util.HttpRequest(requestUrl);
+                req.emptyContentHandling = 0;
+                req.retries = 2;
+                req.continueOnError = true;
+                req.setHeader("Authorization", "Bearer " + auth.accessToken);
+                req.method = "GET";
+                req.contentType = "application/json";
+                req.encoding = "UTF-8";
+
+                var res = req.send();
+
+                var resultJSON = Platform.Function.ParseJSON(String(res.content));
+
+                var items = resultJSON.items;
+
+                if(items == null || items.length == 0) hasMore = false;
+
+                for(var k in items) {
+
+                    var item = items[k];
+
+                    searchResults.push({
+                        id: item.key,
+                        name: item.name,
+                        status: '',
+                        type: form.entity,
+                        content: (item.queryText != null) ? item.queryText : item.script, 
+                        details: {
+                            targetDe: item.targetName,
+                            targetDeUpdateType: item.targetUpdateTypeName,
+                            categoryId: item.categoryId,
+                            createdDate: item.createdDate,
+                            modifiedDate: item.modifiedDate
+                        }
+                    });
+
+                }
+
+                i++;
+
+            }
+
+            searchResults = removeDuplicates(searchResults);
+
+            for(var k in searchResults) {
+
+                searchResults[k].content = "it's a secret!";
+
+            }
+
+            var output = {
+                Status: (searchResults.length > 0) ? 200 : 404,
+                Results: searchResults,
+                Query: queryString
+            }
+
+            Write(Stringify(output));
+
+        } else {
+            throw 'Something is wrong with the token: ' + auth.accessToken;
+        } 
+
+    } catch(err) {
+
+        Write(Stringify(err));
+
+    }    
+
+    function removeDuplicates(arr) { 
+
+        var arr = arr || [];
+
+        var newArray = []; 
+        var uniqueObject = {}; 
+
+        for (var i in arr) { 
+            id = arr[i]['id']; 
+            uniqueObject[id] = arr[i]; 
+        } 
+
+        for (var i in uniqueObject) { 
+            newArray.push(uniqueObject[i]); 
+        } 
+
+        return newArray; 
+    }
+
+
+    function requestToken(bu) {
+
+        var config = {
+            endpoint: "https://xxx-xxxxxxxx.auth.marketingcloudapis.com/v2/token",
+            contentType: "application/json",
+            credentials: {
+              "PUT CREDENTIALS HERE"
+            }
+        }
+
+        var accessTokenRequest = HTTP.Post(config.endpoint, "application/json", Stringify(config.credentials[bu]));
+
+        if (accessTokenRequest.StatusCode == 200) {
+
+            var response = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+            var accessToken = response.access_token;
+            var restInstanceUrl = response.rest_instance_url;
+
+            return {
+                tokenResponse: response,
+                accessToken: accessToken,
+                restInstanceUrl: restInstanceUrl
+            }
+
+        } else {
+            return '';
+        }
+
+    }
+
+</script>
